@@ -12,7 +12,7 @@ on:
       modelname:
         description: 'model name'
         required: true
-        default: 'HC5962'
+        default: 'RM2100'
   release:
     types: [published]
   push:
@@ -47,6 +47,9 @@ jobs:
         cd /opt/rt-n56u/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
+        git clone --depth=1 https://github.com/ronggang/transmission-web-control.git /opt/transmission-web-control
+        rm -rf /opt/rt-n56u/trunk/user/transmission/transmission-control/web/*
+        cp -a /opt/transmission-web-control/src/* /opt/rt-n56u/trunk/user/transmission/transmission-control/web/
     - name: SSH connection to Actions
       uses: etion2008/ssh2actions@v1.0.0
       if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
@@ -57,6 +60,7 @@ jobs:
       env:
         TNAME: ${{ github.event.inputs.modelname }}
       run: |
+        echo "NAMEEXT=_$TNAME$(date +"_%Y%m%d%H%M")" >> $GITHUB_ENV
         cd /opt/rt-n56u/trunk
         if [ ! -f configs/templates/$TNAME.config ] ; then
         echo "configs/templates/$TNAME.config not found "
@@ -95,7 +99,7 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_TUNSAFE=n" >> .config #TUNSAFE
         echo "CONFIG_FIRMWARE_INCLUDE_ALIDDNS=y" >> .config #阿里DDNS
         echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNS=y" >> .config #smartdns
-        echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNSBIN=n" >> .config #smartdns二进制文件
+        echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNSBIN=y" >> .config #smartdns二进制文件
         echo "CONFIG_FIRMWARE_INCLUDE_V2RAY=y" >> .config #集成v2ray执行文件（3.8M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
         echo "CONFIG_FIRMWARE_INCLUDE_TROJAN=y" >> .config #集成trojan执行文件(1.1M左右)，如果不集成，会从网上下载下来执行，不影响正常使用
         echo "CONFIG_FIRMWARE_INCLUDE_KOOLPROXY=y" >> .config #KP广告过滤
@@ -105,13 +109,18 @@ jobs:
         echo "CONFIG_FIRMWARE_INCLUDE_SRELAY=n" >> .config #可以不集成
         echo "CONFIG_FIRMWARE_INCLUDE_WYY=y" >> .config #网易云解锁
         echo "CONFIG_FIRMWARE_INCLUDE_WYYBIN=n" >> .config #网易云解锁GO版本执行文件（4M多）注意固件超大小,不集成会自动下载
-        echo "CONFIG_FIRMWARE_INCLUDE_ZEROTIER=y" >> .config #zerotier ~1.3M
-        echo "CONFIG_FIRMWARE_INCLUDE_npc=y" >> .config #npc内网穿透
+        echo "CONFIG_FIRMWARE_INCLUDE_ZEROTIER=n" >> .config #zerotier ~1.3M
+        if [ "$TNAME"x = "XY-C1"x ]; then
+        echo "CONFIG_FIRMWARE_INCLUDE_TRANSMISSION=y" >> .config #openssl ~1.2MB, transmission ~1.5MB
+        echo "CONFIG_FIRMWARE_INCLUDE_TRANSMISSION_WEB_CONTROL=y" >> .config #~0.8MB
+        fi
         #########################################################################################
         #自定义添加其它功能请参考源码configs/templates/目录下的config文件。按照上面的格式添加即可
         #格式如下：
         #sed -i '/自定义项/d' .config
         #echo "自定义项=y" >> .config
+        sed -i "/DEF_LAN_ADDR/s/192.168.2.1/192.168.2.254/" ./user/shared/defaults.h
+        #sed -i "s/192.168.2./192.168.9./g" ./user/shared/defaults.h
         #########################################################################################
         sudo ./clear_tree
         sudo ./build_firmware_modify $TNAME 0
@@ -120,5 +129,5 @@ jobs:
       uses: actions/upload-artifact@master
       if: always()
       with:
-        name: Padavan-packages
+        name: Padavan-packages${{ env.NAMEEXT }}
         path: /opt/images
