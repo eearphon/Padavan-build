@@ -13,6 +13,10 @@ on:
         description: 'model name'
         required: true
         default: 'RM2100'
+      lanip:
+        description: 'lan ip address'
+        required: true
+        default: '192.168.2.254'
   release:
     types: [published]
   push:
@@ -64,6 +68,7 @@ jobs:
     - name: Build Firmware
       env:
         TNAME: ${{ github.event.inputs.modelname }}
+        LAN_ADDR: ${{ github.event.inputs.lanip }}
       run: |
         echo "NAMEEXT=_$TNAME$(date +"_%Y%m%d%H%M")" >> $GITHUB_ENV
         cd /opt/rt-n56u/trunk
@@ -124,7 +129,9 @@ jobs:
         #格式如下：
         #sed -i '/自定义项/d' .config
         #echo "自定义项=y" >> .config
-        sed -i "/DEF_LAN_ADDR/s/192.168.2.1/192.168.2.254/" ./user/shared/defaults.h
+        if [ "$LAN_ADDR"x != "192.168.2.1"x ]; then
+        sed -i "/DEF_LAN_ADDR/s/192.168.2.1/$LAN_ADDR/" ./user/shared/defaults.h
+        fi
         #sed -i "s/192.168.2./192.168.9./g" ./user/shared/defaults.h
         #########################################################################################
         sudo ./clear_tree
