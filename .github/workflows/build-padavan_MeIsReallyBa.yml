@@ -56,9 +56,6 @@ jobs:
         cd /opt/rt-n56u/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
-        git clone --depth=1 https://github.com/ronggang/transmission-web-control.git /opt/transmission-web-control
-        rm -rf /opt/rt-n56u/trunk/user/transmission/transmission-control/web/*
-        cp -a /opt/transmission-web-control/src/* /opt/rt-n56u/trunk/user/transmission/transmission-control/web/
     - name: SSH connection to Actions
       uses: etion2008/ssh2actions@v1.0.0
       if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
