@@ -10,7 +10,7 @@ on:
         required: false
         default: 'false'
       modelname:
-        description: 'model name'
+        description: 'model name (R2100 XY-C1)'
         required: true
         default: 'CR660x'
       lanip:
