@@ -124,6 +124,7 @@ jobs:
         sed -i "/DEF_LAN_ADDR/s/192.168.2.1/$LAN_ADDR/" ./user/shared/defaults.h
         fi
         #sed -i "s/192.168.2./192.168.9./g" ./user/shared/defaults.h
+        sed -i 's/show_menu(5,18)/show_menu(5,20)/g' ./user/www/n56u_ribbon_fixed/Advanced_frp.asp #修复菜单异常
         #########################################################################################
         sudo ./clear_tree
         sudo ./build_firmware_modify $TNAME 0
