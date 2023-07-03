@@ -121,7 +121,8 @@ jobs:
         #sed -i '/自定义项/d' .config
         #echo "自定义项=y" >> .config
         if [ "$LAN_ADDR"x != "192.168.2.1"x ]; then
-        sed -i "/DEF_LAN_ADDR/s/192.168.2.1/$LAN_ADDR/" ./user/shared/defaults.h
+        LAN_ADDR3p=$(echo $LAN_ADDR | awk -F"." '{print $1"."$2"."$3"."}')
+        sed -i "/DEF_LAN_ADDR/s/192.168.2./$LAN_ADDR3p/" ./user/shared/defaults.h
         fi
         #sed -i "s/192.168.2./192.168.9./g" ./user/shared/defaults.h
         sed -i 's/show_menu(5,18)/show_menu(5,20)/g' ./user/www/n56u_ribbon_fixed/Advanced_frp.asp #修复菜单异常
