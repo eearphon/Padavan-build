@@ -126,6 +126,7 @@ jobs:
         sed -i "s/192.168.2./$LAN_ADDR3p/" ./user/shared/defaults.h
         fi
         #sed -i "s/192.168.2./192.168.9./g" ./user/shared/defaults.h
+        [ -e $GITHUB_WORKSPACE/set_matrix.sh ] && cp $GITHUB_WORKSPACE/set_matrix.sh ./user/scripts/ && sed -i '/autostart/a\\t$(ROMFSINST) -p +x $(THISDIR)/set_matrix.sh /usr/bin/set_matrix.sh' ./user/scripts/Makefile
         sed -i 's/show_menu(5,18)/show_menu(5,20)/g' ./user/www/n56u_ribbon_fixed/Advanced_frp.asp #修复菜单异常
         #########################################################################################
         sudo ./clear_tree
@@ -162,12 +163,14 @@ jobs:
       run: |
         echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
         touch release.txt
+        echo "Model name: ${{ github.event.inputs.modelname }}" >> release.txt
+        echo "Lan IP: ${{ github.event.inputs.lanip }}" >> release.txt
         [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
         [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer](${{ steps.wetransfer.outputs.url }})" >> release.txt
         echo "status=success" >> $GITHUB_OUTPUT
 
     - name: Upload firmware to release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@master
       if: steps.tag.outputs.status == 'success' && !cancelled()
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
